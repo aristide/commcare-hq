@@ -63,7 +63,7 @@ class IterDB(object):
         self.to_delete = []
         return self
 
-    def _commit(self, cmd, docs):
+    def _write(self, cmd, docs):
         try:
             results = cmd(docs)
         except BulkSaveError as e:
@@ -78,13 +78,13 @@ class IterDB(object):
             sleep(self.throttle_secs)
         return success_ids
 
-    def commit_save(self):
-        success_ids = self._commit(self.db.bulk_save, self.to_save)
+    def _commit_save(self):
+        success_ids = self._write(self.db.bulk_save, self.to_save)
         self.saved_ids.update(success_ids)
         self.to_save = []
 
-    def commit_delete(self):
-        success_ids = self._commit(self.db.bulk_delete, self.to_delete)
+    def _commit_delete(self):
+        success_ids = self._write(self.db.bulk_delete, self.to_delete)
         self.deleted_ids.update(success_ids)
         self.to_delete = []
 
@@ -98,11 +98,14 @@ class IterDB(object):
         if len(self.to_delete) >= self.chunksize:
             self.commit_delete()
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def commit(self):
         if self.to_save:
             self.commit_save()
         if self.to_delete:
             self.commit_delete()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.commit()
 
 
 class IterUpdateError(Exception):
