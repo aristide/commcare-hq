@@ -375,3 +375,9 @@ USE_NEW_TIMEZONE_BEHAVIOR = StaticToggle(
      "because it has to be accompanied by a migration.)"),
     [NAMESPACE_DOMAIN],
 )
+
+STREAM_RESTORE_CACHE = StaticToggle(
+    'stream_cached_restore',
+    'Stream cached restore from couchdb',
+    [NAMESPACE_DOMAIN]
+)
